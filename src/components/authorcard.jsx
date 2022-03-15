@@ -31,7 +31,7 @@ const AuthorCard = (props) => {
                   style={{ fontSize: 13, margin: 0 }}
                   onClick={routeChange}
                 >
-                  Read this post
+                  Read our post
                 </Button>
               </Col>
             </Row>

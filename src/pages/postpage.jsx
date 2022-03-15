@@ -1,61 +1,88 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom"
-import { Card, Container, Row, Col, Button } from "react-bootstrap"
-// import "../style/fullContent.css"
+import { Row, Col, Button, Container } from "react-bootstrap";
+import {  useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import moment from "moment";
+// import {FontAwesomeIcon} from 'font-awesome'
 
-function FullContentPage(){
+const PostPage = () => {
   const localProps = useLocation();
-  const [allComment, setAllComment] = useState([])
+  const props = localProps.state;
+  const [comments, setComment] = useState([]);
 
-  const filterComment = (array) => {
-      var newArray = array.filter((comment) => {
-          return comment.post === localProps.state.post.id
-      })
-      setAllComment(newArray)
-  }
+  const findComment = (postId) => {
+    var ments = comments.filter((com) => com.post === postId)[0]
+        // console.log(ments)
+      return ments;
+  };
 
-  let navigate = useNavigate(); 
-    const routeChange = () =>{ 
-        navigate('/addComment', {state: {post: localProps.state.post}})
-    }
-
+  // let navigate = useNavigate();
+  //   const routeChange = () =>{
+  //       navigate('/addComment', {state: {
+  //         post: localProps.state.post,
+  //         categories: localProps.state.categories,
+  //         tags: localProps.state.tags
+  //       }})
+  //   }
   useEffect(() => {
-  fetch("https://fswd-wp.devnss.com/wp-json/wp/v2/comments")
-    .then((res) => {res.json()
-      .then((comments) => {filterComment(comments)})
-    })
-    .catch((err) => {console.log("failed to test")})
-  }, )
+    fetch("https://fswd-wp.devnss.com/wp-json/wp/v2/comments")
+      .then((res) => {
+        res.json().then((cm) => {
+          setComment(cm);
+        });
+      })
+      .catch((err) => {
+        console.log("failed to test");
+      });
+    },[])
 
-  console.log(allComment)
-
-    return(
-      <div>
-        <Container>
-          <Row>
-            <Col md={12} id="fullContent">
-              <h1 id="fullContentTitle">{localProps.state.post.title.rendered}</h1>
-              <div dangerouslySetInnerHTML={{__html: localProps.state.post.content.rendered}} />
-            </Col>
-            <Col md={12} id="allComment">
-              <h1 style={{"marginBottom": "5vh"}}>{allComment.length} Comment</h1>
-              {allComment.map((comment) => {
-                return(
-                  <Card key={comment.id} id="comment">
-                    <Card.Body>
-                      <Card.Title>Author Name : {comment.author_name}</Card.Title>
-                      <Card.Text>{comment.date}</Card.Text>
-                      <div dangerouslySetInnerHTML={{__html: comment.content.rendered}} />
-                    </Card.Body>
-                  </Card>
-                )
+    console.log(props.post.id,comments)
+  return (
+    <div>
+      <Container >
+        <Row>
+          <Col md={12} style={{ marginBottom: 20, marginTop: 20 }}>
+            <h2>{props.post.title} {props.categories.map((item, index) => {
+              return <Category key={index} category={item}></Category>;
             })}
-            <Button onClick={routeChange}>add comment</Button>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-    )
+            {props.tags.map((item, index) => {
+              return <Tag key={index} tag={item}></Tag>;
+            })}</h2>
+            Posted by <b>{props.author.name}</b>{" "}
+            {moment(props.post.date).format("MMMM Do, YYYY, h:mma")}
+            <div style={{ marginBottom: 20, marginTop: 20 ,width:"100%"}} dangerouslySetInnerHTML={{__html: props.post.content.rendered}} />
+            {props.tags.map((item, index) => {
+              return <Comment key={index} tag={item}/>;
+            })}
+          </Col>
+        </Row>
+        <Row>
+          <Col md={12} id="comment"></Col>
+        </Row>
+      </Container>
+    </div>
+  );
+};
+
+const Comment = (prop) => {
+    return (
+        <Button variant="outline-primary" style={{ fontSize: 3, margin: 2 }}>
+          {/* {prop.name} */}
+        </Button>
+      );
 }
 
-export default FullContentPage
+const Category = (prop) => {
+  return (
+    <Button variant="outline-primary" style={{ fontSize: 3, margin: 2 }}>
+      {prop.category.name}
+    </Button>
+  );
+};
+const Tag = (prop) => {
+  return (
+    <Button variant="outline-success" style={{ fontSize: 3, margin: 2 }}>
+      {prop.tag.name}
+    </Button>
+  );
+};
+export default PostPage;
